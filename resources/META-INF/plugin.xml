@@ -1,0 +1,20 @@
+<idea-plugin version="2">
+  <id>com.writeoncereadmany.semantichighlighting</id>
+  <name>Structural Semantic Highlighter</name>
+  <version>1.0</version>
+  <vendor email="tarjohnson1979@gmail.com" url="http://www.writeoncereadmany.wordpress.com">writeoncereadmany</vendor>
+
+  <description><![CDATA[
+      Basic scope/control-structure based semantic highlighter for Java.<br>
+      This doesn't play nicely with existing color schemes: use the Darcula theme and the Semantic Theme - Dark color scheme.<br>
+      This will probably mess up syntax highlighting in other languages. Sorry.
+    ]]></description>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <annotator language="JAVA" implementationClass="com.writeoncereadmany.semantichighlighting.SemanticHighlighter"/>
+    <bundledColorScheme path="/colors/Semantic Theme - Dark"/>
+  </extensions>
+
+  <idea-version since-build="141.0"/>
+
+</idea-plugin>

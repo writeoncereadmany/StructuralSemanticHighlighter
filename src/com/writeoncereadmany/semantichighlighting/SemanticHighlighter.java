@@ -9,7 +9,6 @@ import com.writeoncereadmany.semantichighlighting.coloriser.Coloriser;
 import com.writeoncereadmany.semantichighlighting.psinspections.ConstructorInspections;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -65,10 +64,6 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
                     highlight(expression, Coloriser.italicise(getHighlightFor(definition)));
                 }
             }
-        }
-        else
-        {
-            System.out.println("debug");
         }
     }
 
@@ -164,7 +159,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         annotation.setTextAttributes(attributes);
     }
 
-    private TextAttributesKey getHighlightFor(PsiElement element)
+    private TextAttributesKey getHighlightFor(final PsiElement element)
     {
         // terminators
         if(element instanceof PsiMethod)
@@ -175,7 +170,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         {
             return SemanticHighlightingColors.CLASS;
         }
-        PsiElement parentElement = element.getParent();
+        final PsiElement parentElement = element.getParent();
 
         // modifiers
         if(element instanceof PsiKeyword || element instanceof PsiComment)

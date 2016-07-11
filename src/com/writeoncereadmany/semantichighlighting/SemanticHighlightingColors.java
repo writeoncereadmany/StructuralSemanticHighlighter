@@ -21,6 +21,5 @@ public class SemanticHighlightingColors
     public static final TextAttributesKey PRIVATE_METHOD = TextAttributesKey.createTextAttributesKey("PRIVATE_METHOD", new TextAttributes(COLOR_SCHEME.withHue(0f), null, null, EffectType.BOXED, Font.PLAIN));
     public static final TextAttributesKey CANONICAL_CONSTRUCTOR = TextAttributesKey.createTextAttributesKey("CANONICAL_CONSTRUCTOR", new TextAttributes(COLOR_SCHEME.withHue(0.65f), null, null, EffectType.BOXED, Font.PLAIN));
     public static final TextAttributesKey AUXILIARY_CONSTRUCTOR = TextAttributesKey.createTextAttributesKey("AUXILIARY_CONSTRUCTOR", new TextAttributes(COLOR_SCHEME.withHue(0.75f), null, null, EffectType.BOXED, Font.PLAIN));
-    public static final TextAttributesKey FROM_ANOTHER_FILE = TextAttributesKey.createTextAttributesKey("FROM_ANOTHER_FILE", new TextAttributes(COLOR_SCHEME.withHue(0.1f), null, null, EffectType.BOXED, Font.PLAIN));
     public static final TextAttributesKey UNKNOWN = TextAttributesKey.createTextAttributesKey("UNKNOWN", new TextAttributes(new Color(255, 255, 255), null, null, EffectType.BOXED, Font.PLAIN));
 }

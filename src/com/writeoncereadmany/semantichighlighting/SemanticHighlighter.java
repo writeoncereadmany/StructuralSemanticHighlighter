@@ -3,9 +3,9 @@ package com.writeoncereadmany.semantichighlighting;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.psi.*;
-import com.writeoncereadmany.semantichighlighting.coloriser.Coloriser;
+import com.writeoncereadmany.semantichighlighting.coloriser.ColoriserV2;
+import com.writeoncereadmany.semantichighlighting.coloriser.TextAttributesDescriptor;
 import com.writeoncereadmany.semantichighlighting.psinspections.ConstructorInspections;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,11 +57,11 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
             {
                 if(((PsiVariable)definition).hasModifierProperty(PsiModifier.FINAL))
                 {
-                    highlight(expression, Coloriser.embolden(getHighlightFor(definition)));
+                    highlight(expression, getHighlightFor(definition).embolden());
                 }
                 else
                 {
-                    highlight(expression, Coloriser.italicise(getHighlightFor(definition)));
+                    highlight(expression, getHighlightFor(definition).italicise());
                 }
             }
         }
@@ -153,13 +153,13 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         highlight(expression, getHighlightFor(expression));
     }
 
-    private void highlight(PsiElement element, TextAttributesKey attributes)
+    private void highlight(PsiElement element, TextAttributesDescriptor attributes)
     {
         Annotation annotation = currentAnnotationHolder.createInfoAnnotation(element, null);
-        annotation.setTextAttributes(attributes);
+        annotation.setTextAttributes(ColoriserV2.fromDescriptor(attributes));
     }
 
-    private TextAttributesKey getHighlightFor(final PsiElement element)
+    private TextAttributesDescriptor getHighlightFor(final PsiElement element)
     {
         // terminators
         if(element instanceof PsiMethod)
@@ -168,7 +168,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         }
         else if(element instanceof PsiClass && !(element instanceof PsiTypeParameter))
         {
-            return SemanticHighlightingColors.CLASS;
+            return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_COLOR);
         }
         final PsiElement parentElement = element.getParent();
 
@@ -177,47 +177,47 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         {
             if(SHOW_REFERENCE_SCOPES && element.textMatches(PsiKeyword.THIS))
             {
-                return SemanticHighlightingColors.CLASS;
+                return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_COLOR);
             }
-            return Coloriser.darken(getHighlightFor(parentElement));
+            return getHighlightFor(parentElement).fade();
         }
 
         if(INTRODUCE_NEW_LEVEL.stream().anyMatch(predicate -> predicate.test(element)))
         {
-            return Coloriser.rotate(getHighlightFor(parentElement));
+            return getHighlightFor(parentElement).addLevel();
         }
 
         // otherwise recur
 
         if(parentElement == null)
         {
-            return SemanticHighlightingColors.UNKNOWN;
+            return new TextAttributesDescriptor("UNKNOWN", SemanticHighlightingColors.UNKNOWN_COLOR);
         }
         return getHighlightFor(parentElement);
     }
 
-    public TextAttributesKey getMethodHighlight(final PsiMethod method)
+    public TextAttributesDescriptor getMethodHighlight(final PsiMethod method)
     {
         if(method.isConstructor())
         {
             if(ConstructorInspections.isAuxiliaryConstructor(method))
             {
-                return SemanticHighlightingColors.AUXILIARY_CONSTRUCTOR;
+                return new TextAttributesDescriptor("AUXILIARY_CONSTRUCTOR", SemanticHighlightingColors.AUXILIARY_CONSTRUCTOR_COLOR);
             }
             else
             {
-                return SemanticHighlightingColors.CANONICAL_CONSTRUCTOR;
+                return new TextAttributesDescriptor("CANONICAL_CONSTRUCTOR", SemanticHighlightingColors.CANONICAL_CONSTRUCTOR_COLOR);
             }
         }
         else
         {
             if(method.getModifierList().hasModifierProperty(PsiModifier.PUBLIC))
             {
-                return SemanticHighlightingColors.PUBLIC_METHOD;
+                return new TextAttributesDescriptor("PUBLIC_METHOD", SemanticHighlightingColors.PUBLIC_METHOD_COLOR);
             }
             else
             {
-                return SemanticHighlightingColors.PRIVATE_METHOD;
+                return new TextAttributesDescriptor("PRIVATE_METHOD", SemanticHighlightingColors.PRIVATE_METHOD_COLOR);
             }
         }
     }

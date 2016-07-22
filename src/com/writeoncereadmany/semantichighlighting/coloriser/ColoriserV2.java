@@ -12,11 +12,11 @@ import java.util.function.Function;
 
 public class ColoriserV2
 {
-    private final Map<TextAttributesDescriptor, TextAttributesKey> cache = new HashMap<>();
+    private static final Map<TextAttributesDescriptor, TextAttributesKey> cache = new HashMap<>();
 
-    private final ColorSequence colorSequence = new GoldenRatioHueSequence();
+    private static final ColorSequence colorSequence = new GoldenRatioHueSequence();
 
-    public TextAttributesKey fromDescriptor(TextAttributesDescriptor descriptor) {
+    public static TextAttributesKey fromDescriptor(TextAttributesDescriptor descriptor) {
         if(!cache.containsKey(descriptor))
         {
             calculateTextAttributesKey(descriptor);
@@ -24,7 +24,7 @@ public class ColoriserV2
         return cache.get(descriptor);
     }
 
-    private void calculateTextAttributesKey(TextAttributesDescriptor descriptor) {
+    private static void calculateTextAttributesKey(TextAttributesDescriptor descriptor) {
         Color color = times(descriptor.depth, descriptor.baseColor, colorSequence::nextColor);
         if(descriptor.fade)
         {
@@ -35,7 +35,7 @@ public class ColoriserV2
     }
 
     @NotNull
-    private Color fadeTo(Color color, double fadeFactor) {
+    private static Color fadeTo(Color color, double fadeFactor) {
         return new Color((int)(color.getRed() * fadeFactor), (int)(color.getGreen() * fadeFactor), (int)(color.getBlue() * fadeFactor));
     }
 

@@ -4,5 +4,5 @@ import java.awt.*;
 
 public interface ColorSequence
 {
-    public Color nextColor(Color previousColor);
+    Color nextColor(Color previousColor);
 }

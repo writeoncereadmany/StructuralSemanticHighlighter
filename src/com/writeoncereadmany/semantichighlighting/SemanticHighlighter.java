@@ -7,6 +7,7 @@ import com.intellij.psi.*;
 import com.writeoncereadmany.semantichighlighting.coloriser.Coloriser;
 import com.writeoncereadmany.semantichighlighting.coloriser.TextAttributesDescriptor;
 import com.writeoncereadmany.semantichighlighting.psinspections.ConstructorInspections;
+import com.writeoncereadmany.semantichighlighting.psinspections.StatementInspections;
 import com.writeoncereadmany.semantichighlighting.util.Optionals;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +24,8 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
 
     private static final List<Function<PsiElement, Optional<String>>> INTRODUCE_NEW_LEVEL = asList(
             level(element -> element instanceof PsiLoopStatement, "LOOP"),
-            level(element -> element instanceof PsiIfStatement, "IF"),
+            level(element -> element instanceof PsiIfStatement &&
+                             !StatementInspections.isElseIf((PsiIfStatement)element), "IF"),
             level(element -> element instanceof PsiParenthesizedExpression, "PARENS"),
             level(element -> element instanceof PsiLambdaExpression, "LAMBDA"),
             level(element -> element instanceof PsiExpressionList &&

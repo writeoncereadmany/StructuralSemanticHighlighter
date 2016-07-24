@@ -25,7 +25,7 @@ public class Coloriser
     }
 
     private static void calculateTextAttributesKey(TextAttributesDescriptor descriptor) {
-        Color color = times(descriptor.depth, descriptor.baseColor, colorSequence::nextColor);
+        Color color = times(descriptor.levels.size(), descriptor.baseColor, colorSequence::nextColor);
         if(descriptor.fade)
         {
             color = fadeTo(color, 0.65);

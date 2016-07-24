@@ -4,7 +4,7 @@ import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
-import com.writeoncereadmany.semantichighlighting.coloriser.ColoriserV2;
+import com.writeoncereadmany.semantichighlighting.coloriser.Coloriser;
 import com.writeoncereadmany.semantichighlighting.coloriser.TextAttributesDescriptor;
 import com.writeoncereadmany.semantichighlighting.psinspections.ConstructorInspections;
 import org.jetbrains.annotations.NotNull;
@@ -156,7 +156,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     private void highlight(PsiElement element, TextAttributesDescriptor attributes)
     {
         Annotation annotation = currentAnnotationHolder.createInfoAnnotation(element, null);
-        annotation.setTextAttributes(ColoriserV2.fromDescriptor(attributes));
+        annotation.setTextAttributes(Coloriser.fromDescriptor(attributes));
     }
 
     private TextAttributesDescriptor getHighlightFor(final PsiElement element)

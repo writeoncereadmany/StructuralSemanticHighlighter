@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ColoriserV2
+public class Coloriser
 {
     private static final Map<TextAttributesDescriptor, TextAttributesKey> cache = new HashMap<>();
 

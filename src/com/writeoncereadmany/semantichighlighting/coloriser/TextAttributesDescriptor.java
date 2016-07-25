@@ -52,8 +52,8 @@ public class TextAttributesDescriptor
     }
 
     public int fontType() {
-        return (bold ? Font.BOLD : Font.PLAIN) &
-                (italic ? Font.ITALIC : Font.PLAIN);
+        return (bold ? Font.BOLD : Font.PLAIN) |
+               (italic ? Font.ITALIC : Font.PLAIN);
     }
 
     @Override

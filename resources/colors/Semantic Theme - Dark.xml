@@ -3,10 +3,20 @@
   <option name="EDITOR_FONT_SIZE" value="12" />
   <option name="EDITOR_FONT_NAME" value="Menlo" />
   <colors>
+    <option name="ADDED_LINES_COLOR" value="" />
     <option name="ANNOTATIONS_COLOR" value="" />
+    <option name="CARET_ROW_COLOR" value="" />
+    <option name="GUTTER_BACKGROUND" value="" />
+    <option name="INDENT_GUIDE" value="" />
     <option name="METHOD_SEPARATORS_COLOR" value="" />
+    <option name="MODIFIED_LINES_COLOR" value="" />
+    <option name="NOTIFICATION_BACKGROUND" value="" />
     <option name="READONLY_BACKGROUND" value="1e0410" />
+    <option name="SELECTED_INDENT_GUIDE" value="" />
+    <option name="SELECTION_BACKGROUND" value="" />
     <option name="WHITESPACES" value="" />
+    <option name="WHITESPACES_MODIFIED_LINES_COLOR" value="" />
+
   </colors>
   <attributes>
     <option name="CTRL_CLICKABLE">

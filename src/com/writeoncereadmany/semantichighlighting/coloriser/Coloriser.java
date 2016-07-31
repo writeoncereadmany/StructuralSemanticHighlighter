@@ -15,6 +15,7 @@ public class Coloriser
     private static final Map<TextAttributesDescriptor, TextAttributesKey> cache = new HashMap<>();
 
     private static final ColorSequence colorSequence = new GoldenRatioHueSequence();
+    private static final ColorScheme colorScheme = new ColorScheme(new Color(112, 96, 0), new Color(255, 240, 128));
 
     public static TextAttributesKey fromDescriptor(TextAttributesDescriptor descriptor) {
         if(!cache.containsKey(descriptor))
@@ -25,18 +26,9 @@ public class Coloriser
     }
 
     private static void calculateTextAttributesKey(TextAttributesDescriptor descriptor) {
-        Color color = times(descriptor.levels.size(), descriptor.baseColor, colorSequence::nextColor);
-        if(descriptor.fade)
-        {
-            color = fadeTo(color, 0.65);
-        }
-        TextAttributesKey key = TextAttributesKey.createTextAttributesKey(descriptor.toString(), new TextAttributes(color, null, null, EffectType.BOXED, descriptor.fontType()));
+        float color = times(descriptor.levels.size(), descriptor.baseColor, colorSequence::nextHue);
+        TextAttributesKey key = TextAttributesKey.createTextAttributesKey(descriptor.toString(), new TextAttributes(colorScheme.withHue(color, descriptor.fade), null, null, EffectType.BOXED, descriptor.fontType()));
         cache.put(descriptor, key);
-    }
-
-    @NotNull
-    private static Color fadeTo(Color color, double fadeFactor) {
-        return new Color((int)(color.getRed() * fadeFactor), (int)(color.getGreen() * fadeFactor), (int)(color.getBlue() * fadeFactor));
     }
 
     private static <T> T times(int count, T initialValue, Function<T, T> applicator)

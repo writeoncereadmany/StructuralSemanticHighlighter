@@ -9,17 +9,17 @@ import java.util.Objects;
 public class TextAttributesDescriptor
 {
     public final String baseString;
-    public final Color baseColor;
+    public final float baseColor;
     public final List<String> levels;
     public final boolean fade;
     public final boolean bold;
     public final boolean italic;
 
-    public TextAttributesDescriptor(String baseString, Color baseColor) {
+    public TextAttributesDescriptor(String baseString, float baseColor) {
         this(baseString, baseColor, Collections.emptyList(), false, false, false);
     }
 
-    public TextAttributesDescriptor(String baseString, Color baseColor, List<String> depth, boolean fade, boolean bold, boolean italic) {
+    public TextAttributesDescriptor(String baseString, float baseColor, List<String> depth, boolean fade, boolean bold, boolean italic) {
         this.baseString = baseString;
         this.baseColor = baseColor;
         this.levels = depth;

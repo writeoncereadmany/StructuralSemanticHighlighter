@@ -1,17 +1,11 @@
 package com.writeoncereadmany.semantichighlighting;
 
-import com.writeoncereadmany.semantichighlighting.coloriser.ColorScheme;
-
-import java.awt.*;
-
 public class SemanticHighlightingColors
 {
-    public static final ColorScheme COLOR_SCHEME = new ColorScheme(new Color(255, 240, 128));
-
-    public static final Color CLASS_COLOR = COLOR_SCHEME.getSeedColor();
-    public static final Color PUBLIC_METHOD_COLOR = COLOR_SCHEME.withHue(0.3f);
-    public static final Color PRIVATE_METHOD_COLOR = COLOR_SCHEME.withHue(0f);
-    public static final Color CANONICAL_CONSTRUCTOR_COLOR = COLOR_SCHEME.withHue(0.65f);
-    public static final Color AUXILIARY_CONSTRUCTOR_COLOR = COLOR_SCHEME.withHue(0.75f);
-    public static final Color UNKNOWN_COLOR = new Color(255, 255, 255);
+    public static final float CLASS_HUE = 0.15f;
+    public static final float PUBLIC_METHOD_HUE = 0.3f;
+    public static final float PRIVATE_METHOD_HUE = 0.95f;
+    public static final float CANONICAL_CONSTRUCTOR_HUE = 0.55f;
+    public static final float AUXILIARY_CONSTRUCTOR_HUE = 0.75f;
+    public static final float UNKNOWN_HUE = 0.45f;
 }

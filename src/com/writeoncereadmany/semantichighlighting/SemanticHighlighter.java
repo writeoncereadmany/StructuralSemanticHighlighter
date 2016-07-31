@@ -147,6 +147,16 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     }
 
     @Override
+    public void visitPackageStatement(PsiPackageStatement statement) {
+        highlight(statement, getHighlightFor(statement));
+    }
+
+    @Override
+    public void visitImportStatement(PsiImportStatement statement) {
+        highlight(statement, getHighlightFor(statement));
+    }
+
+    @Override
     public void visitKeyword(PsiKeyword keyword)
     {
         highlight(keyword, getHighlightFor(keyword));
@@ -178,7 +188,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         }
         else if(element instanceof PsiClass && !(element instanceof PsiTypeParameter))
         {
-            return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_COLOR);
+            return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_HUE);
         }
         final PsiElement parentElement = element.getParent();
 
@@ -187,7 +197,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         {
             if(SHOW_REFERENCE_SCOPES && element.textMatches(PsiKeyword.THIS))
             {
-                return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_COLOR);
+                return new TextAttributesDescriptor("CLASS", SemanticHighlightingColors.CLASS_HUE);
             }
             return getHighlightFor(parentElement).fade();
         }
@@ -203,7 +213,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
 
         if(parentElement == null)
         {
-            return new TextAttributesDescriptor("UNKNOWN", SemanticHighlightingColors.UNKNOWN_COLOR);
+            return new TextAttributesDescriptor("UNKNOWN", SemanticHighlightingColors.UNKNOWN_HUE);
         }
         return getHighlightFor(parentElement);
     }
@@ -214,22 +224,22 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         {
             if(ConstructorInspections.isAuxiliaryConstructor(method))
             {
-                return new TextAttributesDescriptor("AUXILIARY_CONSTRUCTOR", SemanticHighlightingColors.AUXILIARY_CONSTRUCTOR_COLOR);
+                return new TextAttributesDescriptor("AUXILIARY_CONSTRUCTOR", SemanticHighlightingColors.AUXILIARY_CONSTRUCTOR_HUE);
             }
             else
             {
-                return new TextAttributesDescriptor("CANONICAL_CONSTRUCTOR", SemanticHighlightingColors.CANONICAL_CONSTRUCTOR_COLOR);
+                return new TextAttributesDescriptor("CANONICAL_CONSTRUCTOR", SemanticHighlightingColors.CANONICAL_CONSTRUCTOR_HUE);
             }
         }
         else
         {
             if(method.getModifierList().hasModifierProperty(PsiModifier.PUBLIC))
             {
-                return new TextAttributesDescriptor("PUBLIC_METHOD", SemanticHighlightingColors.PUBLIC_METHOD_COLOR);
+                return new TextAttributesDescriptor("PUBLIC_METHOD", SemanticHighlightingColors.PUBLIC_METHOD_HUE);
             }
             else
             {
-                return new TextAttributesDescriptor("PRIVATE_METHOD", SemanticHighlightingColors.PRIVATE_METHOD_COLOR);
+                return new TextAttributesDescriptor("PRIVATE_METHOD", SemanticHighlightingColors.PRIVATE_METHOD_HUE);
             }
         }
     }

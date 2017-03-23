@@ -11,12 +11,14 @@ import com.writeoncereadmany.semantichighlighting.psinspections.StatementInspect
 import com.writeoncereadmany.semantichighlighting.util.Optionals;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 public class SemanticHighlighter extends JavaElementVisitor implements Annotator
 {
@@ -62,8 +64,8 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         {
             PsiElement definition = reference.resolve();
             if (definition != null &&
-                definition instanceof PsiVariable &&
-                !((PsiVariable) definition).hasModifierProperty(PsiModifier.STATIC))
+                    definition instanceof PsiVariable &&
+                    !((PsiVariable) definition).hasModifierProperty(PsiModifier.STATIC))
             {
                 if(((PsiVariable)definition).hasModifierProperty(PsiModifier.FINAL))
                 {
@@ -157,6 +159,11 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     }
 
     @Override
+    public void visitImportStaticStatement(PsiImportStaticStatement statement) {
+        highlight(statement, getHighlightFor(statement));
+    }
+
+    @Override
     public void visitKeyword(PsiKeyword keyword)
     {
         highlight(keyword, getHighlightFor(keyword));
@@ -192,8 +199,8 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         }
         final PsiElement parentElement = element.getParent();
 
-        // modifiers
-        if(element instanceof PsiKeyword || element instanceof PsiComment)
+
+        if(element instanceof PsiKeyword)
         {
             if(SHOW_REFERENCE_SCOPES && element.textMatches(PsiKeyword.THIS))
             {
@@ -202,10 +209,22 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
             return getHighlightFor(parentElement).fade();
         }
 
+        if(element instanceof PsiComment)
+        {
+            if(parentElement instanceof PsiCodeBlock)
+            {
+                return getHighlightFor(nextConcreteElement(element).orElse(parentElement)).fade();
+            }
+            else
+            {
+                return getHighlightFor(parentElement).fade();
+            }
+        }
+
         Optional<String> newLevel = INTRODUCE_NEW_LEVEL.stream()
-                                                       .map(f -> f.apply(element))
-                                                       .flatMap(Optionals::stream)
-                                                       .findFirst();
+                .map(f -> f.apply(element))
+                .flatMap(Optionals::stream)
+                .findFirst();
         if(newLevel.isPresent())
         {
             return getHighlightFor(parentElement).addLevel(newLevel.get());
@@ -216,6 +235,20 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
             return new TextAttributesDescriptor("UNKNOWN", SemanticHighlightingColors.UNKNOWN_HUE);
         }
         return getHighlightFor(parentElement);
+    }
+
+    private Optional<PsiElement> nextConcreteElement(PsiElement element) {
+        if (element == null) {
+            return Optional.empty();
+        }
+
+        PsiElement nextElement = element.getNextSibling();
+
+        if(nextElement instanceof PsiWhiteSpace) {
+            return nextConcreteElement(nextElement);
+        } else {
+            return Optional.of(nextElement);
+        }
     }
 
     public TextAttributesDescriptor getMethodHighlight(final PsiMethod method)

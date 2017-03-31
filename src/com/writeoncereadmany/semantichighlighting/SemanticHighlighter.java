@@ -184,6 +184,12 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     {
         Annotation annotation = currentAnnotationHolder.createInfoAnnotation(element, null);
         annotation.setTextAttributes(Coloriser.fromDescriptor(attributes));
+
+        PsiElement parent = element.getParent();
+
+        if(!(parent instanceof PsiFile)) {
+            highlight(parent, getHighlightFor(parent));
+        }
     }
 
     private TextAttributesDescriptor getHighlightFor(final PsiElement element)

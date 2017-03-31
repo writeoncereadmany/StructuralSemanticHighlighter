@@ -1,5 +1,7 @@
 package com.writeoncereadmany.semantichighlighting;
 
+import co.unruly.control.result.Casts;
+import co.unruly.control.result.Result;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -8,39 +10,92 @@ import com.writeoncereadmany.semantichighlighting.coloriser.Coloriser;
 import com.writeoncereadmany.semantichighlighting.coloriser.TextAttributesDescriptor;
 import com.writeoncereadmany.semantichighlighting.psinspections.ConstructorInspections;
 import com.writeoncereadmany.semantichighlighting.psinspections.StatementInspections;
-import com.writeoncereadmany.semantichighlighting.util.Optionals;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.text.html.Option;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static co.unruly.control.result.Match.ifIs;
+import static co.unruly.control.result.Match.match;
+import static com.writeoncereadmany.semantichighlighting.FunctionalDoobries.not;
+import static java.util.Optional.empty;
 
 public class SemanticHighlighter extends JavaElementVisitor implements Annotator
 {
     private static final boolean SHOW_REFERENCE_SCOPES = true;
 
-    private static final List<Function<PsiElement, Optional<String>>> INTRODUCE_NEW_LEVEL = asList(
-            level(element -> element instanceof PsiLoopStatement, "LOOP"),
-            level(element -> element instanceof PsiIfStatement &&
-                             !StatementInspections.isElseIf((PsiIfStatement)element), "IF"),
-            level(element -> element instanceof PsiParenthesizedExpression, "PARENS"),
-            level(element -> element instanceof PsiLambdaExpression, "LAMBDA"),
-            level(element -> element instanceof PsiExpressionList &&
-                             element.getParent() instanceof PsiCallExpression &&
-                             ((PsiExpressionList)element).getExpressions().length > 0, "CALL"),
-            level(element -> element instanceof PsiTypeParameterList &&
-                             ((PsiTypeParameterList)element).getTypeParameters().length > 0, "TYPE_PARAMS"),
-            level(element -> element instanceof PsiReferenceParameterList &&
-                             ((PsiReferenceParameterList)element).getTypeArguments().length > 0, "TYPE_ARGS"));
+
+    private static Function<PsiElement, Optional<String>> introduceLevel = match(
+        ifIs(instanceOf(PsiLoopStatement.class),
+            then("LOOP")),
+        ifIs(instanceOf(PsiIfStatement.class)
+                .with(not(StatementInspections::isElseIf)),
+            then("IF")),
+        ifIs(instanceOf(PsiParenthesizedExpression.class),
+            then("PARENS")),
+        ifIs(instanceOf(PsiLambdaExpression.class),
+            then("LAMBDA")),
+        ifIs(instanceOf(PsiExpressionList.class)
+                .with(nonEmpty(PsiExpressionList::getExpressions))
+                .with(hasParent(PsiCallExpression.class)),
+            then("CALL")),
+        ifIs(instanceOf(PsiTypeParameterList.class)
+                .with(nonEmpty(PsiTypeParameterList::getTypeParameters)),
+            then("TYPE_PARAMS")),
+        ifIs(instanceOf(PsiReferenceParameterList.class)
+                .with(nonEmpty(PsiReferenceParameterList::getTypeArguments)),
+            then("TYPE_ARGS"))
+    ).otherwise(__ -> Optional.empty());
+
+    private static <T extends PsiElement> Predicate<T> hasParent(Class<? extends PsiElement> psiCallExpressionClass) {
+        return t -> psiCallExpressionClass.isAssignableFrom(t.getParent().getClass());
+    }
+
+    private static <T> Predicate<T> nonEmpty(Function<T, ? extends Object[]> arrayExtractor) {
+        return  t -> arrayExtractor.apply(t).length > 0;
+    }
+
+    static class SpecialisingPredicate<T, S extends T> implements Predicate<T> {
+
+        private final Class<S> specialisation;
+        private final Predicate<S> additionalTests;
+
+        SpecialisingPredicate(Class<S> specialisation, Predicate<S> additionalTests) {
+            this.specialisation = specialisation;
+            this.additionalTests = additionalTests;
+        }
+
+        SpecialisingPredicate(Class<S> specialisation) {
+            this(specialisation, __ -> true);
+        }
+
+        @Override
+        public boolean test(T t) {
+            return castToSpecialisation(t).then(r -> r.either(__ -> true, __ -> false));
+        }
+
+        public SpecialisingPredicate<T, S> with(Predicate<S> secondaryTest) {
+            return new SpecialisingPredicate<>(specialisation, additionalTests.and(secondaryTest));
+        }
+
+        @NotNull
+        private Result<S, T> castToSpecialisation(T t) {
+            return Casts.cast(t, specialisation);
+        }
+    }
+
+    static <T extends PsiElement> SpecialisingPredicate<PsiElement, T> instanceOf(Class<T> clazz) {
+        return new SpecialisingPredicate<>(clazz);
+    }
+
+    static <T> Function<T, Optional<String>> then(String s) {
+        return __ -> Optional.of(s);
+    }
 
     private static Function<PsiElement, Optional<String>> level(Predicate<PsiElement> condition, String type)
     {
-        return element -> condition.test(element) ? Optional.of(type) : Optional.empty();
+        return element -> condition.test(element) ? Optional.of(type) : empty();
     }
 
     private AnnotationHolder currentAnnotationHolder;
@@ -227,10 +282,8 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
             }
         }
 
-        Optional<String> newLevel = INTRODUCE_NEW_LEVEL.stream()
-                .map(f -> f.apply(element))
-                .flatMap(Optionals::stream)
-                .findFirst();
+        Optional<String> newLevel = introduceLevel.apply(element);
+
         if(newLevel.isPresent())
         {
             return getHighlightFor(parentElement).addLevel(newLevel.get());
@@ -245,7 +298,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
 
     private Optional<PsiElement> nextConcreteElement(PsiElement element) {
         if (element == null) {
-            return Optional.empty();
+            return empty();
         }
 
         PsiElement nextElement = element.getNextSibling();

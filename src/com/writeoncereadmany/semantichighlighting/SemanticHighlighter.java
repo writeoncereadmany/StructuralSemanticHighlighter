@@ -1,7 +1,5 @@
 package com.writeoncereadmany.semantichighlighting;
 
-import co.unruly.control.result.Casts;
-import co.unruly.control.result.Result;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -16,9 +14,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static co.unruly.control.Predicates.not;
+import static co.unruly.control.casts.Casts.instanceOf;
 import static co.unruly.control.result.Match.ifIs;
 import static co.unruly.control.result.Match.match;
-import static com.writeoncereadmany.semantichighlighting.FunctionalDoobries.not;
 import static java.util.Optional.empty;
 
 public class SemanticHighlighter extends JavaElementVisitor implements Annotator
@@ -29,22 +28,22 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     private static Function<PsiElement, Optional<String>> introduceLevel = match(
         ifIs(instanceOf(PsiLoopStatement.class),
             then("LOOP")),
-        ifIs(instanceOf(PsiIfStatement.class)
-                .with(not(StatementInspections::isElseIf)),
+        ifIs(instanceOf(PsiIfStatement.class,
+                not(StatementInspections::isElseIf)),
             then("IF")),
         ifIs(instanceOf(PsiParenthesizedExpression.class),
             then("PARENS")),
         ifIs(instanceOf(PsiLambdaExpression.class),
             then("LAMBDA")),
-        ifIs(instanceOf(PsiExpressionList.class)
-                .with(nonEmpty(PsiExpressionList::getExpressions))
-                .with(hasParent(PsiCallExpression.class)),
+        ifIs(instanceOf(PsiExpressionList.class,
+                nonEmpty(PsiExpressionList::getExpressions),
+                hasParent(PsiCallExpression.class)),
             then("CALL")),
-        ifIs(instanceOf(PsiTypeParameterList.class)
-                .with(nonEmpty(PsiTypeParameterList::getTypeParameters)),
+        ifIs(instanceOf(PsiTypeParameterList.class,
+                nonEmpty(PsiTypeParameterList::getTypeParameters)),
             then("TYPE_PARAMS")),
-        ifIs(instanceOf(PsiReferenceParameterList.class)
-                .with(nonEmpty(PsiReferenceParameterList::getTypeArguments)),
+        ifIs(instanceOf(PsiReferenceParameterList.class,
+                nonEmpty(PsiReferenceParameterList::getTypeArguments)),
             then("TYPE_ARGS"))
     ).otherwise(__ -> Optional.empty());
 
@@ -56,46 +55,8 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         return  t -> arrayExtractor.apply(t).length > 0;
     }
 
-    static class SpecialisingPredicate<T, S extends T> implements Predicate<T> {
-
-        private final Class<S> specialisation;
-        private final Predicate<S> additionalTests;
-
-        SpecialisingPredicate(Class<S> specialisation, Predicate<S> additionalTests) {
-            this.specialisation = specialisation;
-            this.additionalTests = additionalTests;
-        }
-
-        SpecialisingPredicate(Class<S> specialisation) {
-            this(specialisation, __ -> true);
-        }
-
-        @Override
-        public boolean test(T t) {
-            return castToSpecialisation(t).then(r -> r.either(__ -> true, __ -> false));
-        }
-
-        public SpecialisingPredicate<T, S> with(Predicate<S> secondaryTest) {
-            return new SpecialisingPredicate<>(specialisation, additionalTests.and(secondaryTest));
-        }
-
-        @NotNull
-        private Result<S, T> castToSpecialisation(T t) {
-            return Casts.cast(t, specialisation);
-        }
-    }
-
-    static <T extends PsiElement> SpecialisingPredicate<PsiElement, T> instanceOf(Class<T> clazz) {
-        return new SpecialisingPredicate<>(clazz);
-    }
-
     static <T> Function<T, Optional<String>> then(String s) {
         return __ -> Optional.of(s);
-    }
-
-    private static Function<PsiElement, Optional<String>> level(Predicate<PsiElement> condition, String type)
-    {
-        return element -> condition.test(element) ? Optional.of(type) : empty();
     }
 
     private AnnotationHolder currentAnnotationHolder;

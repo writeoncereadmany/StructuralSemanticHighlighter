@@ -18,6 +18,7 @@ import static co.unruly.control.Predicates.not;
 import static co.unruly.control.casts.Casts.instanceOf;
 import static co.unruly.control.result.Match.ifIs;
 import static co.unruly.control.result.Match.match;
+import static com.writeoncereadmany.semantichighlighting.Level.*;
 import static java.util.Optional.empty;
 
 public class SemanticHighlighter extends JavaElementVisitor implements Annotator
@@ -25,26 +26,26 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
     private static final boolean SHOW_REFERENCE_SCOPES = true;
 
 
-    private static Function<PsiElement, Optional<String>> introduceLevel = match(
+    private static Function<PsiElement, Optional<Level>> introduceLevel = match(
         ifIs(instanceOf(PsiLoopStatement.class),
-            then("LOOP")),
+            then(LOOP)),
         ifIs(instanceOf(PsiIfStatement.class,
                 not(StatementInspections::isElseIf)),
-            then("IF")),
+            then(IF)),
         ifIs(instanceOf(PsiParenthesizedExpression.class),
-            then("PARENS")),
+            then(PARENS)),
         ifIs(instanceOf(PsiLambdaExpression.class),
-            then("LAMBDA")),
+            then(LAMBDA)),
         ifIs(instanceOf(PsiExpressionList.class,
                 nonEmpty(PsiExpressionList::getExpressions),
                 hasParent(PsiCallExpression.class)),
-            then("CALL")),
+            then(CALL)),
         ifIs(instanceOf(PsiTypeParameterList.class,
                 nonEmpty(PsiTypeParameterList::getTypeParameters)),
-            then("TYPE_PARAMS")),
+            then(TYPE_PARAMS)),
         ifIs(instanceOf(PsiReferenceParameterList.class,
                 nonEmpty(PsiReferenceParameterList::getTypeArguments)),
-            then("TYPE_ARGS"))
+            then(TYPE_ARGS))
     ).otherwise(__ -> Optional.empty());
 
     private static <T extends PsiElement> Predicate<T> hasParent(Class<? extends PsiElement> psiCallExpressionClass) {
@@ -55,7 +56,7 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
         return  t -> arrayExtractor.apply(t).length > 0;
     }
 
-    static <T> Function<T, Optional<String>> then(String s) {
+    static <T, S> Function<T, Optional<S>> then(S s) {
         return __ -> Optional.of(s);
     }
 
@@ -243,11 +244,11 @@ public class SemanticHighlighter extends JavaElementVisitor implements Annotator
             }
         }
 
-        Optional<String> newLevel = introduceLevel.apply(element);
+        Optional<Level> newLevel = introduceLevel.apply(element);
 
         if(newLevel.isPresent())
         {
-            return getHighlightFor(parentElement).addLevel(newLevel.get());
+            return getHighlightFor(parentElement).addLevel(newLevel.get().name());
         }
 
         if(parentElement == null)
